@@ -1,0 +1,14 @@
+.content{
+    padding-right: 10%;
+    padding-left: 10%;
+}
+
+.footer{
+    display: flex;
+    justify-content: center;
+}
+
+.but{
+    width: 100px;
+    text-align: center;
+}
