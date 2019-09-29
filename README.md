@@ -10,17 +10,16 @@ Repository Backend pada server sistem absensi
     - [Server Node.JS](#Server-Node.js)
 3. [Run Server](#Run-Server)
 4. [API Request](#API-Request)
-5. [Author](#Author)
 
 ## Prerequisites
 - PostgreSQL
 ```sh
-$ [sudo] apt install postgresql
+$ sudo apt install postgresql
 ```
 - Node.JS and NPM (NodeJS Package Manager)
 ```sh
-$ [sudo] apt install nodejs
-$ [sudo] apt install npm
+$ sudo apt install nodejs
+$ sudo apt install npm
 ```
 ## Installation
 ### Database PostgreSQL
