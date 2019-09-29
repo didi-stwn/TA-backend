@@ -7,7 +7,7 @@ Repository Backend pada server sistem absensi
 1. [Prerequisites](#Prerequisites)
 2. [Installation](#Installation)
     - [Database PostgreSQL](#Database-PostgreSQL)
-    - [Server Node.JS](#Server-Node.JS)
+    - [Server Node.JS](#Server-Node-JS)
 3. [Run Server](#Run-Server)
 4. [API Request](#API-Request)
 
@@ -87,7 +87,7 @@ create table pengguna(
 );
 ```
 
-### Server Node.JS
+### Server Node JS
 1. Clone repository ini ke komputer server
 ```sh
 $ git clone https://github.com/didi-stwn/TA-backend.git
