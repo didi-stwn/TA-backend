@@ -95,7 +95,7 @@ $ git clone https://github.com/didi-stwn/TA-backend.git
 ```
 2. Masuk ke directory repository `cd TA-backend`, kemudian masukkan perintah:
 ```sh
-$ npm install
+$ sudo npm install
 ```
 3. Cek settingan database pada file config.js
 
