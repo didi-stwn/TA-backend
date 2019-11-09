@@ -112,7 +112,6 @@ pilih direktori tempat aplikasi express akan diinstall atau buat direktori baru 
 ```sh
 $ mkdir myapp
 $ cd myapp
-$ 
 ```
 
 kemudian, install express js dengan cara: 
