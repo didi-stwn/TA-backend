@@ -7,7 +7,6 @@ const cors = require('cors');
 const indexRouter = require('./routes/index');
 const loginRouter = require('./routes/login');
 const refreshRouter = require('./routes/refresh');
-const deviceRouter = require('./routes/device');
 const fakultasjurusanRouter = require('./routes/fakultasjurusan');
 const filterpenggunaRouter = require('./routes/filterpengguna');
 const filterruanganRouter = require('./routes/filterruangan');
@@ -15,6 +14,7 @@ const logRouter = require('./routes/log');
 const matkulRouter = require('./routes/matkul');
 const penggunaRouter = require('./routes/pengguna');
 const ruanganRouter = require('./routes/ruangan');
+const cobaRouter = require('./routes/coba')
 
 const app = express();
 
@@ -32,7 +32,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/login', loginRouter);
 app.use('/refresh', refreshRouter);
-app.use('/device', deviceRouter);
 app.use('/fakultasjurusan', fakultasjurusanRouter);
 app.use('/filterpengguna', filterpenggunaRouter);
 app.use('/filterruangan', filterruanganRouter);
@@ -40,6 +39,7 @@ app.use('/log', logRouter);
 app.use('/matkul', matkulRouter);
 app.use('/pengguna', penggunaRouter);
 app.use('/ruangan', ruanganRouter);
+app.use('/coba', cobaRouter)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

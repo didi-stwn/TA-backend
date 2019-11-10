@@ -19,7 +19,7 @@ router.post('/', (req, res, next) => {
                 });
             } else {
                 req.decoded = decoded;
-                var newtoken = jwt.sign({oldtoken: oldtoken},
+                var newtoken = jwt.sign({sidang: "eedays2020"},
                 config.secret,
                 { expiresIn: '1h'});
                 console.log('New token auth')
