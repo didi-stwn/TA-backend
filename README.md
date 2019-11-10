@@ -10,6 +10,7 @@ Repository Backend pada server sistem absensi
     - [Server Node JS](#Server-Node-JS)
 3. [Run Server](#Run-Server)
 4. [API Request](#API-Request)
+5. [Instalasi Express JS](#Instalasi-Express-JS)
 
 ## Prerequisites
 - PostgreSQL
@@ -105,3 +106,25 @@ Nyalakan server dengan memasukkan perintah `npm start` pada *root directory* rep
 ## API Request
 Server API ini memiliki 4 fungsi utama untuk modifikasi database, fungsi-fungsi tersebut adalah *Read*, *Create*, *Edit*, dan *Delete*. Serta semua autentikasi dilakukan dengan cara memberikan header pada setiap request dengan format  'x-access-token:{token}'. untuk lebih jelasnya dapat dilihat pada file API.sh
 
+
+### Instalasi Express JS
+pilih direktori tempat aplikasi express akan diinstall atau buat direktori baru dengan cara:
+```sh
+$ mkdir myapp
+$ cd myapp
+```
+
+kemudian, install express js dengan cara: 
+```sh
+$ npx express-generator
+```
+
+kemudian, install node module dengan cara: 
+```sh
+$ npm install
+```
+
+untuk memulai aplikasinya dapat dilakukan dengan cara:
+```sh
+$ npm start
+```
