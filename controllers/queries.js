@@ -1,6 +1,7 @@
 const path = require('path');
 const config = require(path.join(__dirname,'..','config'));
 const Pool = require('pg').Pool
+var net = require('net');
 
 const pool = new Pool({
   user: config.user,
@@ -386,7 +387,7 @@ const getLog = (request, response) => {
   var deaddate = new Date().toLocaleString()
   var date = deaddate + "+0"
   if ((startDate==null)&&(endDate==null)){
-    pool.query(`SELECT * FROM log WHERE nama LIKE '%${search}%' OR nim LIKE '%${search}%' OR koderuangan LIKE '%${search}%' OR kodematkul LIKE '%${search}%' OR status LIKE '%${search}%' ORDER BY ${sortby} ${ascdsc} LIMIT ${limit} OFFSET ${offset}`, (error, results) => {
+    pool.query(`SELECT * FROM log WHERE nama LIKE '%${search}%' OR nim LIKE '%${search}%' OR koderuangan LIKE '%${search}%' OR kodematkul LIKE '%${search}%' OR kelas LIKE '%${search}%' OR status LIKE '%${search}%' ORDER BY ${sortby} ${ascdsc} LIMIT ${limit} OFFSET ${offset}`, (error, results) => {
       if (error) {
         response.status(400).send({
           status: 0,
@@ -394,7 +395,7 @@ const getLog = (request, response) => {
         })
       }
       else{
-        pool.query(`SELECT * FROM log WHERE nama LIKE '%${search}%' OR nim LIKE '%${search}%' OR koderuangan LIKE '%${search}%' OR kodematkul LIKE '%${search}%' OR status LIKE '%${search}%'`, (error, result) => {
+        pool.query(`SELECT * FROM log WHERE nama LIKE '%${search}%' OR nim LIKE '%${search}%' OR koderuangan LIKE '%${search}%' OR kodematkul LIKE '%${search}%' OR kelas LIKE '%${search}%' OR status LIKE '%${search}%'`, (error, result) => {
           response.status(200).json({
             status: 1,
             count: result.rowCount,
@@ -405,7 +406,7 @@ const getLog = (request, response) => {
     })
   }
   else if ((startDate==null)&&(endDate!=null)){
-    pool.query(`SELECT * FROM log WHERE (waktu NOT BETWEEN '${endDate}' AND '${date}') AND (nama LIKE '%${search}%' OR nim LIKE '%${search}%' OR koderuangan LIKE '%${search}%' OR kodematkul LIKE '%${search}%' OR status LIKE '%${search}%') ORDER BY ${sortby} ${ascdsc} LIMIT ${limit} OFFSET ${offset}`, (error, results) => {
+    pool.query(`SELECT * FROM log WHERE (waktu NOT BETWEEN '${endDate}' AND '${date}') AND (nama LIKE '%${search}%' OR nim LIKE '%${search}%' OR koderuangan LIKE '%${search}%' OR kodematkul LIKE '%${search}%' OR kelas LIKE '%${search}%' OR status LIKE '%${search}%') ORDER BY ${sortby} ${ascdsc} LIMIT ${limit} OFFSET ${offset}`, (error, results) => {
       if (error) {
         response.status(400).send({
           status: 0,
@@ -413,7 +414,7 @@ const getLog = (request, response) => {
         })
       }
       else{
-        pool.query(`SELECT * FROM log WHERE (waktu NOT BETWEEN '${endDate}' AND '${date}') AND (nama LIKE '%${search}%' OR nim LIKE '%${search}%' OR koderuangan LIKE '%${search}%' OR kodematkul LIKE '%${search}%' OR status LIKE '%${search}%')`, (error, result) => {
+        pool.query(`SELECT * FROM log WHERE (waktu NOT BETWEEN '${endDate}' AND '${date}') AND (nama LIKE '%${search}%' OR nim LIKE '%${search}%' OR koderuangan LIKE '%${search}%' OR kodematkul LIKE '%${search}%' OR kelas LIKE '%${search}%' OR status LIKE '%${search}%')`, (error, result) => {
           response.status(200).json({
             status: 1,
             count: result.rowCount,
@@ -424,7 +425,7 @@ const getLog = (request, response) => {
     })
   }
   else if ((startDate!=null)&&(endDate==null)){
-    pool.query(`SELECT * FROM log WHERE (waktu BETWEEN '${startDate}' AND '${date}') AND (nama LIKE '%${search}%' OR nim LIKE '%${search}%' OR koderuangan LIKE '%${search}%' OR kodematkul LIKE '%${search}%' OR status LIKE '%${search}%') ORDER BY ${sortby} ${ascdsc} LIMIT ${limit} OFFSET ${offset}`, (error, results) => {
+    pool.query(`SELECT * FROM log WHERE (waktu BETWEEN '${startDate}' AND '${date}') AND (nama LIKE '%${search}%' OR nim LIKE '%${search}%' OR koderuangan LIKE '%${search}%' OR kodematkul LIKE '%${search}%' OR kelas LIKE '%${search}%' OR status LIKE '%${search}%') ORDER BY ${sortby} ${ascdsc} LIMIT ${limit} OFFSET ${offset}`, (error, results) => {
       if (error) {
         response.status(400).send({
           status: 0,
@@ -432,7 +433,7 @@ const getLog = (request, response) => {
         })
       }
       else{
-        pool.query(`SELECT * FROM log WHERE (waktu BETWEEN '${startDate}' AND '${date}') AND (nama LIKE '%${search}%' OR nim LIKE '%${search}%' OR koderuangan LIKE '%${search}%' OR kodematkul LIKE '%${search}%' OR status LIKE '%${search}%')`, (error, result) => {
+        pool.query(`SELECT * FROM log WHERE (waktu BETWEEN '${startDate}' AND '${date}') AND (nama LIKE '%${search}%' OR nim LIKE '%${search}%' OR koderuangan LIKE '%${search}%' OR kodematkul LIKE '%${search}%' OR kelas LIKE '%${search}%' OR status LIKE '%${search}%')`, (error, result) => {
           response.status(200).json({
             status: 1,
             count: result.rowCount,
@@ -443,7 +444,7 @@ const getLog = (request, response) => {
     })
   }
   else {
-    pool.query(`SELECT * FROM log WHERE (waktu BETWEEN '${startDate}' AND '${endDate}') AND (nama LIKE '%${search}%' OR nim LIKE '%${search}%' OR koderuangan LIKE '%${search}%' OR kodematkul LIKE '%${search}%' OR status LIKE '%${search}%') ORDER BY ${sortby} ${ascdsc} LIMIT ${limit} OFFSET ${offset}`, (error, results) => {
+    pool.query(`SELECT * FROM log WHERE (waktu BETWEEN '${startDate}' AND '${endDate}') AND (nama LIKE '%${search}%' OR nim LIKE '%${search}%' OR koderuangan LIKE '%${search}%' OR kodematkul LIKE '%${search}%' OR kelas LIKE '%${search}%' OR status LIKE '%${search}%') ORDER BY ${sortby} ${ascdsc} LIMIT ${limit} OFFSET ${offset}`, (error, results) => {
       if (error) {
         response.status(400).send({
           status: 0,
@@ -451,7 +452,7 @@ const getLog = (request, response) => {
         })
       }
       else{
-        pool.query(`SELECT * FROM log WHERE (waktu BETWEEN '${startDate}' AND '${endDate}') AND (nama LIKE '%${search}%' OR nim LIKE '%${search}%' OR koderuangan LIKE '%${search}%' OR kodematkul LIKE '%${search}%' OR status LIKE '%${search}%')`, (error, result) => {
+        pool.query(`SELECT * FROM log WHERE (waktu BETWEEN '${startDate}' AND '${endDate}') AND (nama LIKE '%${search}%' OR nim LIKE '%${search}%' OR koderuangan LIKE '%${search}%' OR kodematkul LIKE '%${search}%' OR kelas LIKE '%${search}%' OR status LIKE '%${search}%')`, (error, result) => {
           response.status(200).json({
             status: 1,
             count: result.rowCount,
@@ -485,35 +486,53 @@ const getLogByNimDate = (request, response) => {
   })
 }
 
+// const createLog = (request, response) => {
+//   var {waktu, nama, nim, koderuangan, kodematkul, status} = request.body
+//   pool.query(`select * from pengguna a inner join filterpengguna b on a.nim = '${nim}' and  a.nim = b.nim  inner join filterruangan c on b.kodematkul='${kodematkul}' and c.koderuangan='${koderuangan}' and b.kodematkul = c.kodematkul`, (error, results) => {
+//     if (error) {
+//       response.status(400).send({
+//         status: 0,
+//         pesan: "Input data is incorrect"
+//       })
+//     }
+//     else if (results.rowCount!==0){
+//       pool.query('INSERT INTO log (waktu, nama, nim, koderuangan, kodematkul, status) VALUES ($1, $2, $3, $4, $5, $6)', [waktu, nama, nim, koderuangan, kodematkul, status], (error, results) => {
+//         if (error) {
+//           response.status(400).send({
+//             status: 0,
+//             pesan: "Input data is incorrect"
+//           })
+//         }
+//         else{
+//           response.status(200).json({
+//             status: 1,
+//             pesan: "Data added"
+//           })
+//         }
+//       })
+//     }
+//     else {
+//       response.status(400).send({
+//         status: 0,
+//         pesan: "Input data is incorrect"
+//       })
+//     }
+//   })
+// }
+
 const createLog = (request, response) => {
-  var {waktu, nama, nim, koderuangan, kodematkul, status} = request.body
-  pool.query(`select * from pengguna a inner join filterpengguna b on a.nim = '${nim}' and  a.nim = b.nim  inner join filterruangan c on b.kodematkul='${kodematkul}' and c.koderuangan='${koderuangan}' and b.kodematkul = c.kodematkul`, (error, results) => {
+  var {waktu, nama, nim, koderuangan, kodematkul, kelas, status} = request.body
+  pool.query('INSERT INTO log (waktu, nama, nim, koderuangan, kodematkul, kelas, status) VALUES ($1, $2, $3, $4, $5, $6, $7)', [waktu, nama, nim, koderuangan, kodematkul, kelas, status], (error, results) => {
     if (error) {
       response.status(400).send({
         status: 0,
         pesan: "Input data is incorrect"
       })
     }
-    else if (results.rowCount!==0){
-      pool.query('INSERT INTO log (waktu, nama, nim, koderuangan, kodematkul, status) VALUES ($1, $2, $3, $4, $5, $6)', [waktu, nama, nim, koderuangan, kodematkul, status], (error, results) => {
-        if (error) {
-          response.status(400).send({
-            status: 0,
-            pesan: "Input data is incorrect"
-          })
-        }
-        else{
-          response.status(200).json({
-            status: 1,
-            pesan: "Data added"
-          })
-        }
-      })
-    }
-    else {
-      response.status(400).send({
-        status: 0,
-        pesan: "Input data is incorrect"
+    else{
+      response.status(200).json({
+        status: 1,
+        pesan: "Data added"
       })
     }
   })
@@ -609,6 +628,24 @@ const deleteMatkul = (request, response) => {
       response.status(200).json({
         status: 1,
         pesan: "Data deleted"
+      })
+    }
+  })
+}
+
+const getDevicePengguna = (request, response) => {
+  pool.query(`SELECT * FROM pengguna`, (error, results) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: 'Failed to GET',
+      })
+    }
+    else{
+      response.status(200).json({
+        status: 1,
+        count: results.rowCount,
+        hasil: results.rows
       })
     }
   })
@@ -718,7 +755,7 @@ const deletePengguna = (request, response) => {
 const getRuangan = (request, response) => {
   var {sortby, ascdsc, search, page, limit} = request.body
   var offset = page*limit-limit;
-  pool.query(`SELECT * FROM ruangan WHERE koderuangan LIKE '%${search}%' OR alamat LIKE '%${search}%' ORDER BY ${sortby} ${ascdsc} LIMIT ${limit} OFFSET ${offset}`, (error, results) => {
+  pool.query(`SELECT * FROM ruangan WHERE kodedevice LIKE '%${search}%' OR koderuangan LIKE '%${search}%' OR alamat LIKE '%${search}%' ORDER BY ${sortby} ${ascdsc} LIMIT ${limit} OFFSET ${offset}`, (error, results) => {
     if (error) {
       response.status(400).send({
         status: 0,
@@ -726,7 +763,7 @@ const getRuangan = (request, response) => {
       })
     }
     else{
-      pool.query(`SELECT * FROM ruangan WHERE koderuangan LIKE '%${search}%' OR alamat LIKE '%${search}%'`, (error, result) => {
+      pool.query(`SELECT * FROM ruangan WHERE kodedevice LIKE '%${search}%' OR koderuangan LIKE '%${search}%' OR alamat LIKE '%${search}%'`, (error, result) => {
         response.status(200).json({
           status: 1,
           count: result.rowCount,
@@ -738,9 +775,9 @@ const getRuangan = (request, response) => {
 }
 
 const createRuangan = (request, response) => {
-  var {koderuangan, alamat} = request.body
+  var {kodedevice, koderuangan, alamat} = request.body
   var lastseen = new Date().toLocaleString() + "+0"
-  pool.query('INSERT INTO ruangan (koderuangan, alamat, lastseen) VALUES ($1, $2, $3)', [koderuangan, alamat, lastseen], (error, results) => {
+  pool.query('INSERT INTO ruangan (kodedevice, koderuangan, alamat, lastseen) VALUES ($1, $2, $3, $4)', [kodedevice, koderuangan, alamat, lastseen], (error, results) => {
     if (error) {
       response.status(400).send({
         status: 0,
@@ -757,8 +794,8 @@ const createRuangan = (request, response) => {
 }
 
 const updateRuangan = (request, response) => {
-  var { oldkoderuangan, newalamat } = request.body
-  pool.query(`UPDATE ruangan set alamat='${newalamat}' WHERE koderuangan='${oldkoderuangan}'`,(error, results) => {
+  var { oldkodedevice, newkoderuangan, newalamat } = request.body
+  pool.query(`UPDATE ruangan set koderuangan='${newkoderuangan}', alamat='${newalamat}' WHERE kodedevice='${oldkodedevice}'`,(error, results) => {
     if (error) {
       response.status(400).send({
         status: 0,
@@ -776,9 +813,9 @@ const updateRuangan = (request, response) => {
 }
 
 const updateLastseenRuangan = (request, response) => {
-  var { koderuangan } = request.params
+  var { kodedevice } = request.body
   var lastseen = new Date().toLocaleString() + "+0"
-  pool.query(`UPDATE ruangan set lastseen='${lastseen}' WHERE koderuangan='${koderuangan}'`,(error, results) => {
+  pool.query(`UPDATE ruangan set lastseen='${lastseen}' WHERE kodedevice='${kodedevice}'`,(error, results) => {
     if (error) {
       response.status(400).send({
         status: 0,
@@ -796,8 +833,8 @@ const updateLastseenRuangan = (request, response) => {
 }
 
 const deleteRuangan = (request, response) => {
-  var {koderuangan} = request.body
-  pool.query(`DELETE FROM ruangan WHERE koderuangan = '${koderuangan}'`, (error, results) => {
+  var {kodedevice} = request.body
+  pool.query(`DELETE FROM ruangan WHERE kodedevice = '${kodedevice}'`, (error, results) => {
     if (error) {
       response.status(400).send({
         status: 0,
@@ -814,21 +851,49 @@ const deleteRuangan = (request, response) => {
 }
 
 const getCoba = (request, response) => {
-  pool.query(`SELECT * FROM coba`, (error, results) => {
-    if (error) {
-      response.status(400).send({
-        status: 0,
-        pesan: 'Failed to GET',
-      })
-    }
-    else{
-      response.status(200).json({
-          status: 1,
-          count: results.rowCount,
-          hasil: results.rows
-      })
-    }
-  })
+  // var client = new net.Socket();
+  // client.on('error', function(err) {
+  //   console.log(err);
+  //   response.status(200).json({
+  //     status: 1,
+  //     pesan: err
+  //   })
+  // });
+
+  // client.connect(8088, '192.168.0.116', function() {
+  //   client.write("1");
+  //   response.status(200).json({
+  //     status: 1,
+  //   })
+  //   client.destroy(); 
+  // });
+  
+  // // client.on('data', function(data) {
+  // //   console.log('Received: ' + data);
+  // //   response.status(200).json({
+  // //     status: 1,
+  // //     pesan: String(data)
+  // //   })
+  // //   client.destroy(); // kill client after server's response
+  // // });
+  
+  // client.on('close', function() {
+  // });
+  // pool.query(`SELECT * FROM coba`, (error, results) => {
+  //   if (error) {
+  //     response.status(400).send({
+  //       status: 0,
+  //       pesan: 'Failed to GET',
+  //     })
+  //   }
+  //   else{
+  //     response.status(200).json({
+  //         status: 1,
+  //         count: results.rowCount,
+  //         hasil: results.rows
+  //     })
+  //   }
+  // })
 }
 
 const createCoba = (request, response) => {
@@ -844,6 +909,133 @@ const createCoba = (request, response) => {
       response.status(200).json({
         status: 1,
         pesan: "Data added"
+      })
+    }
+  })
+}
+
+const getDataFingerprint = (request, response) => {
+  pool.query(`SELECT * FROM datafingerprint`, (error, results) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: 'Failed to GET',
+      })
+    }
+    else{
+      response.status(200).json({
+          status: 1,
+	  count: results.rowCount,
+          hasil: results.rows
+      })
+    }
+  })
+}
+
+const createDataFingerprint = (request, response) => {
+  var {no, template} = request.body
+  pool.query('INSERT INTO datafingerprint (no, template) VALUES ($1, $2)', [no, template], (error, results) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: "Input data is incorrect"
+      })
+    }
+    else{
+      response.status(200).json({
+        status: 1,
+        pesan: "Data added"
+      })
+    }
+  })
+}
+
+const updateDataFingerprint = (request, response) => {
+  var { no, template } = request.body
+  pool.query(`UPDATE datafingerprint set template='${template}' WHERE no='${no}'`,(error, results) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: "Input data is incorrect"
+      })
+    }
+    else{
+      response.status(200).json({
+        status: 1,
+        pesan: "Data updated"
+      })
+    }
+    }
+  )
+}
+
+const deleteDataFingerprint = (request, response) => {
+  var {no} = request.body
+  pool.query(`DELETE FROM datafingerprint WHERE no = '${no}'`, (error, results) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: "Input data is incorrect"
+      })
+    }
+    else{
+      response.status(200).json({
+        status: 1,
+        pesan: "Data deleted"
+      })
+    }
+  })
+}
+
+const getFingerprint = (request, response) => {
+  var {kodedevice} = request.params
+  pool.query(`SELECT template FROM fingerprint WHERE device='${kodedevice}'`, (error, results) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: 'Failed to GET',
+      })
+    }
+    else{
+      response.status(200).json({
+          status: 1,
+          hasil: results.rows
+      })
+    }
+  })
+}
+
+const createFingerprint = (request, response) => {
+  var {device, template} = request.body
+  pool.query('INSERT INTO fingerprint (device, template) VALUES ($1, $2)', [device, template], (error, results) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: "Input data is incorrect"
+      })
+    }
+    else{
+      response.status(200).json({
+        status: 1,
+        pesan: "Data added"
+      })
+    }
+  })
+}
+
+const deleteFingerprint = (request, response) => {
+  var {kodedevice} = request.body
+  pool.query(`DELETE FROM fingerprint WHERE device = '${kodedevice}'`, (error, results) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: "Input data is incorrect"
+      })
+    }
+    else{
+      response.status(200).json({
+        status: 1,
+        pesan: "Data deleted"
       })
     }
   })
@@ -880,6 +1072,7 @@ module.exports = {
   updateMatkul,
   deleteMatkul,
   //pengguna
+  getDevicePengguna,
   getPengguna,
   getPenggunaByFakultas,
   createPengguna,
@@ -891,7 +1084,20 @@ module.exports = {
   updateRuangan,
   updateLastseenRuangan,
   deleteRuangan,
+  //Data Fingerprint
+  getDataFingerprint,
+  createDataFingerprint,
+  updateDataFingerprint,
+  deleteDataFingerprint,
+  //Fingerprint
+  getFingerprint,
+  createFingerprint,
+  deleteFingerprint,
 
   getCoba,
   createCoba
 }
+
+//
+//select a.hari, a.jam, b.kodematkul, c.nim, c.nama, c.finger1, c.finger2 from filterruangan a inner join filterpengguna b on a.koderuangan = '9125' and  a.kodematkul = b.kodematkul inner join pengguna c on b.nim = c.nim order by a.hari asc, a.jam asc;
+

@@ -14,6 +14,8 @@ const logRouter = require('./routes/log');
 const matkulRouter = require('./routes/matkul');
 const penggunaRouter = require('./routes/pengguna');
 const ruanganRouter = require('./routes/ruangan');
+const fingerprintRouter = require('./routes/fingerprint');
+const datafingerprintRouter = require('./routes/datafingerprint');
 const cobaRouter = require('./routes/coba')
 
 const app = express();
@@ -39,6 +41,8 @@ app.use('/log', logRouter);
 app.use('/matkul', matkulRouter);
 app.use('/pengguna', penggunaRouter);
 app.use('/ruangan', ruanganRouter);
+app.use('/fingerprint', fingerprintRouter);
+app.use('/datafingerprint', datafingerprintRouter);
 app.use('/coba', cobaRouter)
 
 // catch 404 and forward to error handler

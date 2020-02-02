@@ -30,7 +30,7 @@ router.post('/', (req, res, next) => {
             });
         } else {
             console.log('Login failed')
-            res.send(403).json({
+            res.json({
                 status: 0,
                 message: 'Incorrect username or password'
             });
