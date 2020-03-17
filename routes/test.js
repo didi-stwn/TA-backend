@@ -4,9 +4,9 @@ const path = require('path');
 const db = require(path.join(__dirname,'..','controllers','queries'))
 const auth = require(path.join(__dirname,'..','controllers','auth'))
 
-router.get('/read/:kodedevice', db.getFingerprint);
-router.get('/check_device/:kodedevice', db.getFingerprintDevice);
-router.post('/create/', db.createFingerprint);
-router.post('/delete/', db.deleteFingerprint);
+router.get('/read/', db.testread);
+router.post('/create/', db.testcreate);
+router.put('/update/', db.testupdate);
+router.delete('/delete/', db.testdelete);
 
 module.exports = router;

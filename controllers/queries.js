@@ -206,7 +206,7 @@ const deleteFakultasJurusan = (request, response) => {
 const getFilterPengguna = (request, response) => {
   var {sortby, ascdsc, search, page, limit, nimfilter} = request.body
   var offset = page*limit-limit;
-  pool.query(`SELECT a.nim, a.nama, a.kodematkul, b.namamatkul, a.kelas FROM filterpengguna a inner join matkul b on a.kodematkul = b.kodematkul and a.nim LIKE '%${nimfilter}%' WHERE a.kodematkul LIKE '%${search}%' OR b.namamatkul LIKE '%${search}%' OR a.kelas LIKE '%${search}%' ORDER BY ${sortby} ${ascdsc} LIMIT ${limit} OFFSET ${offset}`, (error, results) => {
+  pool.query(`SELECT a.nim, a.nama, a.kodematkul, b.namamatkul, a.kelas FROM filterpengguna a inner join matkul b on a.kodematkul = b.kodematkul AND a.kelas = b.kelas and a.nim LIKE '%${nimfilter}%' WHERE a.kodematkul LIKE '%${search}%' OR b.namamatkul LIKE '%${search}%' OR a.kelas LIKE '%${search}%' ORDER BY ${sortby} ${ascdsc} LIMIT ${limit} OFFSET ${offset}`, (error, results) => {
     if (error) {
       response.status(400).send({
         status: 0,
@@ -214,7 +214,7 @@ const getFilterPengguna = (request, response) => {
       })
     }
     else{
-      pool.query(`SELECT a.nim, a.nama, a.kodematkul, b.namamatkul, a.kelas FROM filterpengguna a inner join matkul b on a.kodematkul = b.kodematkul and a.nim LIKE '%${nimfilter}%' WHERE a.kodematkul LIKE '%${search}%' OR b.namamatkul LIKE '%${search}%' OR a.kelas LIKE '%${search}%'`, (error, result) => {
+      pool.query(`SELECT a.nim, a.nama, a.kodematkul, b.namamatkul, a.kelas FROM filterpengguna a inner join matkul b on a.kodematkul = b.kodematkul AND a.kelas = b.kelas and a.nim LIKE '%${nimfilter}%' WHERE a.kodematkul LIKE '%${search}%' OR b.namamatkul LIKE '%${search}%' OR a.kelas LIKE '%${search}%'`, (error, result) => {
         response.status(200).json({
           status: 1,
           count: result.rowCount,
@@ -256,6 +256,26 @@ const deleteFilterPengguna = (request, response) => {
       response.status(200).json({
         status: 1,
         pesan: "Data deleted"
+      })
+    }
+  })
+}
+
+const getFilterTime = (request, response) => {
+  const koderuangan = request.params.koderuangan
+
+  pool.query(`SELECT hari,jam from filterruangan where koderuangan = '${koderuangan}' ORDER BY hari ASC, jam ASC`, (error, results) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: 'Failed to GET',
+      })
+    }
+    else{
+      response.status(200).json({
+        status: 1,
+        count: results.rowCount,
+        hasil: results.rows
       })
     }
   })
@@ -633,8 +653,30 @@ const deleteMatkul = (request, response) => {
   })
 }
 
-const getDevicePengguna = (request, response) => {
-  pool.query(`SELECT * FROM pengguna`, (error, results) => {
+// const getDevicePengguna = (request, response) => {
+//   var {koderuangan} = request.params
+//   // SELECT a.hari, a.jam, a.kodematkul, a.kelas, b.nim, b.nama, c.finger1, c.finger2 FROM filterruangan a INNER JOIN filterpengguna b ON a.koderuangan = '9125' AND a.kodematkul = b.kodematkul AND a.kelas = b.kelas INNER JOIN pengguna c ON b.nim = c.nim ORDER BY a.hari asc, a.jam asc;
+
+  // pool.query(`SELECT a.hari, a.jam, a.durasi, a.kodematkul, a.kelas, b.nim, b.nama, c.finger1, c.finger2 FROM filterruangan a INNER JOIN filterpengguna b ON a.koderuangan = '${koderuangan}' AND a.kodematkul = b.kodematkul AND a.kelas = b.kelas INNER JOIN pengguna c ON b.nim = c.nim ORDER BY a.hari asc, a.jam asc`, (error, results) => {
+  //   if (error) {
+  //     response.status(400).send({
+  //       status: 0,
+  //       pesan: 'Failed to GET',
+  //     })
+  //   }
+  //   else{
+  //     response.status(200).json({
+  //       status: 1,
+  //       count: results.rowCount,
+  //       hasil: results.rows
+  //     })
+  //   }
+  // })
+// }
+
+const getDeviceMatkulPengguna = (request, response) => {
+  var {koderuangan} = request.params
+  pool.query(`SELECT hari, jam, durasi, kodematkul, kelas FROM filterruangan WHERE koderuangan = '${koderuangan}' ORDER BY hari asc, jam asc`, (error, results) => {
     if (error) {
       response.status(400).send({
         status: 0,
@@ -651,10 +693,9 @@ const getDevicePengguna = (request, response) => {
   })
 }
 
-const getPengguna = (request, response) => {
-  var {sortby, ascdsc, search, page, limit} = request.body
-  var offset = page*limit-limit;
-  pool.query(`SELECT * FROM pengguna WHERE fakultas LIKE '%${search}%' OR jurusan LIKE '%${search}%' OR nim LIKE '%${search}%' OR nama LIKE '%${search}%' OR finger1 LIKE '%${search}%' OR finger2 LIKE '%${search}%' ORDER BY ${sortby} ${ascdsc} LIMIT ${limit} OFFSET ${offset}`, (error, results) => {
+const getDevicePengguna = (request, response) => {
+  var {kodematkul, kelas, offset} = request.params
+  pool.query(`SELECT a.nim, a.nama, b.finger1, b.finger2 FROM filterpengguna a INNER JOIN pengguna b ON a.kodematkul = '${kodematkul}' AND a.kelas = '${kelas}' AND a.nim = b.nim ORDER BY a.nim asc LIMIT 5 OFFSET '${offset}'`, (error, results) => {
     if (error) {
       response.status(400).send({
         status: 0,
@@ -662,7 +703,37 @@ const getPengguna = (request, response) => {
       })
     }
     else{
-      pool.query(`SELECT * FROM pengguna WHERE fakultas LIKE '%${search}%' OR jurusan LIKE '%${search}%' OR nim LIKE '%${search}%' OR nama LIKE '%${search}%' OR finger1 LIKE '%${search}%' OR finger2 LIKE '%${search}%'`, (error, result) => {
+      pool.query(`SELECT a.nim, a.nama, b.finger1, b.finger2 FROM filterpengguna a INNER JOIN pengguna b ON a.kodematkul = '${kodematkul}' AND a.kelas = '${kelas}' AND a.nim = b.nim ORDER BY a.nim asc`, (error, resultss) => {
+        if (error) {
+          response.status(400).send({
+            status: 0,
+            pesan: 'Failed to GET',
+          })
+        }
+        else {
+          response.status(200).json({
+            status: 1,
+            count: resultss.rowCount,
+            hasil: results.rows
+          })
+        }
+      })
+    }
+  })
+}
+
+const getPengguna = (request, response) => {
+  var {sortby, ascdsc, search, page, limit} = request.body
+  var offset = page*limit-limit;
+  pool.query(`SELECT fakultas,jurusan,nim,nama FROM pengguna WHERE fakultas LIKE '%${search}%' OR jurusan LIKE '%${search}%' OR nim LIKE '%${search}%' OR nama LIKE '%${search}%' OR finger1 LIKE '%${search}%' OR finger2 LIKE '%${search}%' ORDER BY ${sortby} ${ascdsc} LIMIT ${limit} OFFSET ${offset}`, (error, results) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: 'Failed to GET',
+      })
+    }
+    else{
+      pool.query(`SELECT fakultas,jurusan,nim,nama FROM pengguna WHERE fakultas LIKE '%${search}%' OR jurusan LIKE '%${search}%' OR nim LIKE '%${search}%' OR nama LIKE '%${search}%' OR finger1 LIKE '%${search}%' OR finger2 LIKE '%${search}%'`, (error, result) => {
         response.status(200).json({
           status: 1,
           count: result.rowCount,
@@ -677,7 +748,7 @@ const getPenggunaByFakultas = (request, response) => {
   var fakultas = removeSpace(request.params.fakultas)
   var {sortby, ascdsc, search, page, limit} = request.body
   var offset = page*limit-limit;
-  pool.query(`SELECT * FROM pengguna WHERE (fakultas = '${fakultas}') AND (jurusan LIKE '%${search}%' OR nim LIKE '%${search}%' OR nama LIKE '%${search}%' OR finger1 LIKE '%${search}%' OR finger2 LIKE '%${search}%') ORDER BY ${sortby} ${ascdsc} LIMIT ${limit} OFFSET ${offset}`, (error, results) => {
+  pool.query(`SELECT fakultas,jurusan,nim,nama FROM pengguna WHERE (fakultas = '${fakultas}') AND (jurusan LIKE '%${search}%' OR nim LIKE '%${search}%' OR nama LIKE '%${search}%' OR finger1 LIKE '%${search}%' OR finger2 LIKE '%${search}%') ORDER BY ${sortby} ${ascdsc} LIMIT ${limit} OFFSET ${offset}`, (error, results) => {
     if (error) {
       response.status(400).send({
         status: 0,
@@ -685,7 +756,7 @@ const getPenggunaByFakultas = (request, response) => {
       })
     }
     else{
-      pool.query(`SELECT * FROM pengguna WHERE (fakultas = '${fakultas}') AND (jurusan LIKE '%${search}%' OR nim LIKE '%${search}%' OR nama LIKE '%${search}%' OR finger1 LIKE '%${search}%' OR finger2 LIKE '%${search}%')`, (error, result) => {
+      pool.query(`SELECT fakultas,jurusan,nim,nama FROM pengguna WHERE (fakultas = '${fakultas}') AND (jurusan LIKE '%${search}%' OR nim LIKE '%${search}%' OR nama LIKE '%${search}%' OR finger1 LIKE '%${search}%' OR finger2 LIKE '%${search}%')`, (error, result) => {
         response.status(200).json({
           status: 1,
           count: result.rowCount,
@@ -777,7 +848,8 @@ const getRuangan = (request, response) => {
 const createRuangan = (request, response) => {
   var {kodedevice, koderuangan, alamat} = request.body
   var lastseen = new Date().toLocaleString() + "+0"
-  pool.query('INSERT INTO ruangan (kodedevice, koderuangan, alamat, lastseen) VALUES ($1, $2, $3, $4)', [kodedevice, koderuangan, alamat, lastseen], (error, results) => {
+  var status = 1
+  pool.query('INSERT INTO ruangan (kodedevice, koderuangan, alamat, lastseen, status) VALUES ($1, $2, $3, $4, $5)', [kodedevice, koderuangan, alamat, lastseen, status], (error, results) => {
     if (error) {
       response.status(400).send({
         status: 0,
@@ -812,6 +884,25 @@ const updateRuangan = (request, response) => {
   )
 }
 
+const updateDevice = (request, response) => {
+  var { kodedevice } = request.body
+  var {kode} = request.body
+  pool.query(`UPDATE ruangan set status='${kode}' WHERE kodedevice='${kodedevice}'`,(error, results) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: "Input data is incorrect"
+      })
+    }
+    else{
+      response.status(200).json({
+        status: 1,
+        pesan: "Updated"
+      })
+    }
+  })
+}
+
 const updateLastseenRuangan = (request, response) => {
   var { kodedevice } = request.body
   var lastseen = new Date().toLocaleString() + "+0"
@@ -823,13 +914,21 @@ const updateLastseenRuangan = (request, response) => {
       })
     }
     else{
-      response.status(200).json({
-        status: 1,
-        pesan: "Data updated"
+      pool.query(`SELECT status FROM ruangan WHERE kodedevice='${kodedevice}'`,(error, resultss) => {
+        if (error) {
+          response.status(400).send({
+            status: 0,
+            pesan: "Input data is incorrect"
+          })
+        }
+        else{
+          response.status(200).json({
+            status: resultss.rows[0].status,
+          })
+        }
       })
     }
-    }
-  )
+  })
 }
 
 const deleteRuangan = (request, response) => {
@@ -987,6 +1086,30 @@ const deleteDataFingerprint = (request, response) => {
   })
 }
 
+const getFingerprintDevice = (request, response) => {
+  var {kodedevice} = request.params
+  pool.query(`SELECT kodedevice FROM ruangan WHERE kodedevice='${kodedevice}'`, (error, results) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: 'Failed to GET',
+      })
+    }
+    else{
+      if (results.rowCount==0){
+        response.status(400).json({
+          status: 0,
+        })
+      }
+      else{
+        response.status(200).json({
+          status: 1,
+        })
+      }
+    }
+  })
+}
+
 const getFingerprint = (request, response) => {
   var {kodedevice} = request.params
   pool.query(`SELECT template FROM fingerprint WHERE device='${kodedevice}'`, (error, results) => {
@@ -1007,6 +1130,9 @@ const getFingerprint = (request, response) => {
 
 const createFingerprint = (request, response) => {
   var {device, template} = request.body
+  console.log(device);
+  console.log(template);
+    
   pool.query('INSERT INTO fingerprint (device, template) VALUES ($1, $2)', [device, template], (error, results) => {
     if (error) {
       response.status(400).send({
@@ -1041,6 +1167,74 @@ const deleteFingerprint = (request, response) => {
   })
 }
 
+const testread = (request, response) => {
+  pool.query(`select * from test`, (error, results) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: "get data failed"
+      })
+    }
+    else{
+      response.status(200).json({
+        status: 1,
+        pesan: results.rows
+      })
+    }
+  })
+}
+
+const testcreate = (request, response) => {
+  var {no, isi} = request.body
+  pool.query(`insert into test (no, isi) values (${no}, '${isi}')`, (error, results) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: "get data failed"
+      })
+    }
+    else{
+      response.status(200).json({
+        status: 1,
+        pesan: "Create finish"
+      })
+    }
+  })
+}
+const testupdate = (request, response) => {
+  var {no_new, no_old, isi_new, isi_old} = request.body
+  pool.query(`update test set no = ${no_new}, isi = '${isi_new}' where no = ${no_old} and isi = '${isi_old}'`, (error, results) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: "get data failed"
+      })
+    }
+    else{
+      response.status(200).json({
+        status: 1,
+        pesan: "Update finish"
+      })
+    }
+  })
+}
+const testdelete = (request, response) => {
+  var {no} = request.body
+  pool.query(`delete from test where no = ${no}`, (error, results) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: "get data failed"
+      })
+    }
+    else{
+      response.status(200).json({
+        status: 1,
+        pesan: "delete finish"
+      })
+    }
+  })
+}
 module.exports = {
   //device
   // getDevice,
@@ -1072,6 +1266,7 @@ module.exports = {
   updateMatkul,
   deleteMatkul,
   //pengguna
+  getDeviceMatkulPengguna,
   getDevicePengguna,
   getPengguna,
   getPenggunaByFakultas,
@@ -1083,6 +1278,7 @@ module.exports = {
   createRuangan,
   updateRuangan,
   updateLastseenRuangan,
+  updateDevice,
   deleteRuangan,
   //Data Fingerprint
   getDataFingerprint,
@@ -1091,11 +1287,18 @@ module.exports = {
   deleteDataFingerprint,
   //Fingerprint
   getFingerprint,
+  getFingerprintDevice,
   createFingerprint,
   deleteFingerprint,
-
+  //Get time ruangan (jam dan hari)
+  getFilterTime,
   getCoba,
-  createCoba
+  createCoba,
+
+  testread,
+  testcreate,
+  testupdate,
+  testdelete
 }
 
 //

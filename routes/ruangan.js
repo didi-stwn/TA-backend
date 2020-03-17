@@ -8,6 +8,7 @@ router.post('/read/', auth.checkToken, db.getRuangan);
 router.post('/create/',auth.checkToken, db.createRuangan);
 router.post('/update/', auth.checkToken, db.updateRuangan);
 router.post('/update_last_seen/', db.updateLastseenRuangan);
+router.post('/update_device/', db.updateDevice);
 router.post('/delete/', auth.checkToken, db.deleteRuangan);
 
 module.exports = router;
