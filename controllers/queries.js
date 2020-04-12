@@ -374,7 +374,7 @@ const getFilterTime = (request, response) => {
 
 const getFilterRuangan = (request, response) => {
   const koderuangan = request.params.koderuangan
-  pool.query(`SELECT * from ruangan where koderuangan = '${koderuangan}'`, (error, results) => {
+  pool.query(`SELECT koderuangan from ruangan where koderuangan = '${koderuangan}'`, (error, results) => {
     if (error) {
       response.status(400).send({
         status: 0,
@@ -387,7 +387,7 @@ const getFilterRuangan = (request, response) => {
       })
     }
     else {
-      pool.query(`SELECT a.hari, a.jam, a.durasi, a.koderuangan, a.kodematkul, b.namamatkul, a.kelas FROM filterruangan a inner join matkul b on a.kodematkul = b.kodematkul and a.koderuangan LIKE '%${koderuangan}%'`, (error, resultss) => {
+      pool.query(`SELECT a.hari, a.jam, a.durasi, a.koderuangan, a.kodematkul, b.namamatkul, a.kelas FROM filterruangan a inner join matkul b on a.kodematkul = b.kodematkul and a.kelas = b.kelas and a.koderuangan = '${koderuangan}' order by a.hari asc, a.jam asc`, (error, resultss) => {
         if (error) {
           response.status(400).send({
             status: 0,
@@ -684,6 +684,95 @@ const getMatkul = (request, response) => {
           count: result.rowCount,
           hasil: results.rows
         })
+      })
+    }
+  })
+}
+
+const getMatkulPengguna = (request, response) => {
+  var { sortby, ascdsc, search, page, limit, kodematkul, kelas } = request.body
+  var offset = page * limit - limit;
+
+  pool.query(`SELECT a.fakultas, a.jurusan, b.nim, a.nama, c.namamatkul FROM pengguna a inner join filterpengguna b on a.nim = b.nim AND b.kodematkul = '${kodematkul}' AND b.kelas = '${kelas}' INNER JOIN matkul c on c.kodematkul = b.kodematkul AND c.kelas = b.kelas WHERE a.fakultas LIKE '%${search}%' OR a.jurusan LIKE '%${search}%' OR b.nim LIKE '%${search}%' OR a.nama LIKE '%${search}%' ORDER BY ${sortby} ${ascdsc} LIMIT ${limit} OFFSET ${offset}`, (error, results_mahasiswa) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: 'Failed to GET',
+      })
+    }
+    else {
+      pool.query(`SELECT a.fakultas, a.jurusan, b.nim, a.nama, c.namamatkul FROM pengguna a inner join filterpengguna b on a.nim = b.nim AND b.kodematkul = '${kodematkul}' AND b.kelas = '${kelas}' INNER JOIN matkul c on c.kodematkul = b.kodematkul AND c.kelas = b.kelas WHERE a.fakultas LIKE '%${search}%' OR a.jurusan LIKE '%${search}%' OR b.nim LIKE '%${search}%' OR a.nama LIKE '%${search}%'`, (error, result_mahasiswa) => {
+        if (error) {
+          response.status(400).send({
+            status: 0,
+            pesan: 'Failed to GET',
+          })
+        }
+        else {
+          pool.query(`SELECT a.fakultas, a.jurusan, b.nip, a.nama FROM dosen a inner join filterdosen b on a.nip = b.nip AND b.kodematkul = '${kodematkul}' AND b.kelas = '${kelas}' ORDER BY a.nama asc`, (error, results_dosen) => {
+            if (error) {
+              response.status(400).send({
+                status: 0,
+                pesan: 'Failed to GET',
+              })
+            }
+            else {
+              pool.query(`SELECT a.fakultas, a.jurusan, b.nip, a.nama FROM pengguna a inner join filterdosen b on a.nim = b.nip AND b.kodematkul = '${kodematkul}' AND b.kelas = '${kelas}' ORDER BY b.nip asc`, (error, results_asisten) => {
+                if (error) {
+                  response.status(400).send({
+                    status: 0,
+                    pesan: 'Failed to GET',
+                  })
+                }
+                else {
+                  response.status(200).json({
+                    status: 1,
+                    count_mahasiswa: result_mahasiswa.rowCount,
+                    hasil_mahasiswa: results_mahasiswa.rows,
+                    count_pengajar: results_dosen.rowCount + results_asisten.rowCount,
+                    hasil_dosen: results_dosen.rows,
+                    hasil_asisten: results_asisten.rows,
+                  })
+                }
+              })
+            }
+          })
+        }
+      })
+    }
+  })
+}
+
+const getMatkulRuangan = (request, response) => {
+  const { kodematkul, kelas } = request.body
+
+  pool.query(`SELECT kodematkul from matkul where kodematkul = '${kodematkul}' and kelas = '${kelas}'`, (error, results) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: 'Failed to GET',
+      })
+    }
+    else if (results.rowCount === 0) {
+      response.status(200).json({
+        status: 2,
+      })
+    }
+    else {
+      pool.query(`SELECT a.hari, a.jam, a.durasi, a.koderuangan, b.alamat FROM filterruangan a inner join ruangan b on a.kodematkul = '${kodematkul}' and a.kelas = '${kelas}' and a.koderuangan = b.koderuangan order by a.hari asc, a.jam asc`, (error, resultss) => {
+        if (error) {
+          response.status(400).send({
+            status: 0,
+            pesan: 'Failed to GET',
+          })
+        }
+        else {
+          response.status(200).json({
+            status: 1,
+            count: resultss.rowCount,
+            hasil: resultss.rows
+          })
+        }
       })
     }
   })
@@ -1387,8 +1476,6 @@ const getFingerprint = (request, response) => {
 
 const createFingerprint = (request, response) => {
   var { device, template } = request.body
-  console.log(device);
-  console.log(template);
 
   pool.query('INSERT INTO fingerprint (device, template) VALUES ($1, $2)', [device, template], (error, results) => {
     if (error) {
@@ -1524,6 +1611,8 @@ module.exports = {
   deleteLog,
   //matkul
   getMatkul,
+  getMatkulPengguna,
+  getMatkulRuangan,
   createMatkul,
   updateMatkul,
   deleteMatkul,
