@@ -407,65 +407,55 @@ const getFilterRuangan = (request, response) => {
 }
 
 const createFilterRuangan = (request, response) => {
-  var { hari, jam, durasi, koderuangan, kodematkul, kelas } = request.body
-  pool.query(`SELECT * from filterruangan where koderuangan = '${koderuangan}' and hari = '${hari}' and jam = '${jam}'`, (error, resultss) => {
+  var { hari, jam, durasi, koderuangan, kodematkul, kelas, filter } = request.body
+  var i
+  var count_kelas_kosong = 0
+  var selector
+  var value_selector
+
+  if (filter === 'koderuangan') {
+    selector = 'koderuangan'
+    value_selector = koderuangan
+  }
+  else if (filter === 'kodematkul'){
+    selector = 'kodematkul'
+    value_selector = kodematkul
+  }
+
+  pool.query(`SELECT jam from filterruangan where ${selector} = '${value_selector}' and hari = '${hari}' order by jam asc`, (error, resultss) => {
     if (error) {
       response.status(400).send({
         status: 0,
         pesan: 'Failed to Add',
       })
     }
-    else if (resultss.rowCount !== 0) {
-      response.status(200).json({
-        status: 0,
-        pesan: "Input data is incorrect",
-      })
-    }
     else {
-      if (durasi === "1") {
-        pool.query('INSERT INTO filterruangan (hari, jam, durasi, koderuangan, kodematkul, kelas) VALUES ($1, $2, $3, $4, $5, $6)', [hari, jam, durasi, koderuangan, kodematkul, kelas], (error, resultsss) => {
-          if (error) {
-            response.status(400).send({
-              status: 0,
-              pesan: "Input data is incorrect"
-            })
-          }
-          else {
-            response.status(200).json({
-              status: 1,
-              pesan: "Data added"
-            })
-          }
+      for (i = 0; i < resultss.rowCount; i++) {
+        if ((resultss.rows[i].jam >= parseInt(jam)) && (resultss.rows[i].jam < (parseInt(jam) + parseInt(durasi)))) {
+          count_kelas_kosong = count_kelas_kosong + 1
+        }
+        else {
+          count_kelas_kosong = count_kelas_kosong
+        }
+      }
+      if (count_kelas_kosong > 0) {
+        response.status(400).send({
+          status: 0,
+          pesan: 'Class already exist',
         })
       }
-      else if (durasi === "2") {
-        pool.query(`SELECT * from filterruangan where koderuangan = '${koderuangan}' and hari = '${hari}' and jam = '${jam + 1}'`, (error, resultssss) => {
+      else {
+        pool.query('INSERT INTO filterruangan (hari, jam, durasi, koderuangan, kodematkul, kelas) VALUES ($1, $2, $3, $4, $5, $6)', [hari, jam, durasi, koderuangan, kodematkul, kelas], (error, results) => {
           if (error) {
             response.status(400).send({
               status: 0,
               pesan: 'Failed to Add',
             })
           }
-          else if (resultssss.rowCount !== 0) {
-            response.status(200).json({
-              status: 0,
-              pesan: "Input data is incorrect",
-            })
-          }
           else {
-            pool.query('INSERT INTO filterruangan (hari, jam, durasi, koderuangan, kodematkul, kelas) VALUES ($1, $2, $3, $4, $5, $6)', [hari, jam, durasi, koderuangan, kodematkul, kelas], (error, resultsssss) => {
-              if (error) {
-                response.status(400).send({
-                  status: 0,
-                  pesan: "Input data is incorrect"
-                })
-              }
-              else {
-                response.status(200).json({
-                  status: 1,
-                  pesan: "Data added"
-                })
-              }
+            response.status(200).send({
+              status: 1,
+              pesan: 'Data added',
             })
           }
         })
