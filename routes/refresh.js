@@ -21,7 +21,7 @@ router.post('/', (req, res, next) => {
                 req.decoded = decoded;
                 var newtoken = jwt.sign({sidang: "eedays2020"},
                 config.secret,
-                { expiresIn: '1h'});
+                { expiresIn: '900000'}); //15 menit
                 console.log('New token auth')
                 return res.json({
                     status: 1,

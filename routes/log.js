@@ -6,6 +6,7 @@ const auth = require(path.join(__dirname,'..','controllers','auth'))
 
 router.post('/read/', auth.checkToken, db.getLog);
 router.post('/read/:nim', auth.checkToken, db.getLogByNimDate);
+router.post('/statistik/:nim', auth.checkToken, db.getStatistikByNimDate);
 router.post('/create/', db.createLog);
 router.post('/delete/', auth.checkToken, db.deleteLog);
 

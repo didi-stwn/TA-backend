@@ -378,12 +378,13 @@ const getFilterRuangan = (request, response) => {
     if (error) {
       response.status(400).send({
         status: 0,
-        pesan: 'Failed to GET',
+        pesan: 'Failed to GET ruangan',
       })
     }
     else if (results.rowCount === 0) {
       response.status(200).json({
         status: 2,
+        pesan: 'Ruangan Not Found',
       })
     }
     else {
@@ -407,26 +408,16 @@ const getFilterRuangan = (request, response) => {
 }
 
 const createFilterRuangan = (request, response) => {
-  var { hari, jam, durasi, koderuangan, kodematkul, kelas, filter } = request.body
+  var { hari, jam, durasi, koderuangan, kodematkul, kelas} = request.body
   var i
   var count_kelas_kosong = 0
-  var selector
-  var value_selector
 
-  if (filter === 'koderuangan') {
-    selector = 'koderuangan'
-    value_selector = koderuangan
-  }
-  else if (filter === 'kodematkul'){
-    selector = 'kodematkul'
-    value_selector = kodematkul
-  }
 
-  pool.query(`SELECT jam from filterruangan where ${selector} = '${value_selector}' and hari = '${hari}' order by jam asc`, (error, resultss) => {
+  pool.query(`SELECT jam from filterruangan where (koderuangan = '${koderuangan}' or kodematkul = '${kodematkul}') and hari = '${hari}' order by jam asc`, (error, resultss) => {
     if (error) {
       response.status(400).send({
         status: 0,
-        pesan: 'Failed to Add',
+        pesan: 'Failed to Adds',
       })
     }
     else {
@@ -485,8 +476,7 @@ const deleteFilterRuangan = (request, response) => {
 const getLog = (request, response) => {
   var { startDate, endDate, sortby, ascdsc, search, page, limit } = request.body
   var offset = page * limit - limit
-  var deaddate = new Date().toLocaleString()
-  var date = deaddate + "+0"
+  var date = new Date().toLocaleString() + "+0"
   if ((startDate == null) && (endDate == null)) {
     pool.query(`SELECT * FROM log WHERE nama LIKE '%${search}%' OR nim LIKE '%${search}%' OR koderuangan LIKE '%${search}%' OR kodematkul LIKE '%${search}%' OR kelas LIKE '%${search}%' OR status LIKE '%${search}%'  OR keterangan LIKE '%${search}%' ORDER BY ${sortby} ${ascdsc} LIMIT ${limit} OFFSET ${offset}`, (error, results) => {
       if (error) {
@@ -507,7 +497,7 @@ const getLog = (request, response) => {
     })
   }
   else if ((startDate == null) && (endDate != null)) {
-    pool.query(`SELECT * FROM log WHERE (waktu NOT BETWEEN '${endDate}' AND '${date}') AND (nama LIKE '%${search}%' OR nim LIKE '%${search}%' OR koderuangan LIKE '%${search}%' OR kodematkul LIKE '%${search}%' OR kelas LIKE '%${search}%' OR status LIKE '%${search}%') OR keterangan LIKE '%${search}%' ORDER BY ${sortby} ${ascdsc} LIMIT ${limit} OFFSET ${offset}`, (error, results) => {
+    pool.query(`SELECT * FROM log WHERE (waktu NOT BETWEEN '${endDate}' AND '${date}') AND (nama LIKE '%${search}%' OR nim LIKE '%${search}%' OR koderuangan LIKE '%${search}%' OR kodematkul LIKE '%${search}%' OR kelas LIKE '%${search}%' OR status LIKE '%${search}%' OR keterangan LIKE '%${search}%') ORDER BY ${sortby} ${ascdsc} LIMIT ${limit} OFFSET ${offset}`, (error, results) => {
       if (error) {
         response.status(400).send({
           status: 0,
@@ -515,7 +505,7 @@ const getLog = (request, response) => {
         })
       }
       else {
-        pool.query(`SELECT * FROM log WHERE (waktu NOT BETWEEN '${endDate}' AND '${date}') AND (nama LIKE '%${search}%' OR nim LIKE '%${search}%' OR koderuangan LIKE '%${search}%' OR kodematkul LIKE '%${search}%' OR kelas LIKE '%${search}%' OR status LIKE '%${search}%') OR keterangan LIKE '%${search}%'`, (error, result) => {
+        pool.query(`SELECT * FROM log WHERE (waktu NOT BETWEEN '${endDate}' AND '${date}') AND (nama LIKE '%${search}%' OR nim LIKE '%${search}%' OR koderuangan LIKE '%${search}%' OR kodematkul LIKE '%${search}%' OR kelas LIKE '%${search}%' OR status LIKE '%${search}%' OR keterangan LIKE '%${search}%')`, (error, result) => {
           response.status(200).json({
             status: 1,
             count: result.rowCount,
@@ -526,7 +516,7 @@ const getLog = (request, response) => {
     })
   }
   else if ((startDate != null) && (endDate == null)) {
-    pool.query(`SELECT * FROM log WHERE (waktu BETWEEN '${startDate}' AND '${date}') AND (nama LIKE '%${search}%' OR nim LIKE '%${search}%' OR koderuangan LIKE '%${search}%' OR kodematkul LIKE '%${search}%' OR kelas LIKE '%${search}%' OR status LIKE '%${search}%') OR keterangan LIKE '%${search}%' ORDER BY ${sortby} ${ascdsc} LIMIT ${limit} OFFSET ${offset}`, (error, results) => {
+    pool.query(`SELECT * FROM log WHERE (waktu BETWEEN '${startDate}' AND '${date}') AND (nama LIKE '%${search}%' OR nim LIKE '%${search}%' OR koderuangan LIKE '%${search}%' OR kodematkul LIKE '%${search}%' OR kelas LIKE '%${search}%' OR status LIKE '%${search}%' OR keterangan LIKE '%${search}%') ORDER BY ${sortby} ${ascdsc} LIMIT ${limit} OFFSET ${offset}`, (error, results) => {
       if (error) {
         response.status(400).send({
           status: 0,
@@ -534,7 +524,7 @@ const getLog = (request, response) => {
         })
       }
       else {
-        pool.query(`SELECT * FROM log WHERE (waktu BETWEEN '${startDate}' AND '${date}') AND (nama LIKE '%${search}%' OR nim LIKE '%${search}%' OR koderuangan LIKE '%${search}%' OR kodematkul LIKE '%${search}%' OR kelas LIKE '%${search}%' OR status LIKE '%${search}%') OR keterangan LIKE '%${search}%'`, (error, result) => {
+        pool.query(`SELECT * FROM log WHERE (waktu BETWEEN '${startDate}' AND '${date}') AND (nama LIKE '%${search}%' OR nim LIKE '%${search}%' OR koderuangan LIKE '%${search}%' OR kodematkul LIKE '%${search}%' OR kelas LIKE '%${search}%' OR status LIKE '%${search}%' OR keterangan LIKE '%${search}%')`, (error, result) => {
           response.status(200).json({
             status: 1,
             count: result.rowCount,
@@ -545,7 +535,7 @@ const getLog = (request, response) => {
     })
   }
   else {
-    pool.query(`SELECT * FROM log WHERE (waktu BETWEEN '${startDate}' AND '${endDate}') AND (nama LIKE '%${search}%' OR nim LIKE '%${search}%' OR koderuangan LIKE '%${search}%' OR kodematkul LIKE '%${search}%' OR kelas LIKE '%${search}%' OR status LIKE '%${search}%') OR keterangan LIKE '%${search}%' ORDER BY ${sortby} ${ascdsc} LIMIT ${limit} OFFSET ${offset}`, (error, results) => {
+    pool.query(`SELECT * FROM log WHERE (waktu BETWEEN '${startDate}' AND '${endDate}') AND (nama LIKE '%${search}%' OR nim LIKE '%${search}%' OR koderuangan LIKE '%${search}%' OR kodematkul LIKE '%${search}%' OR kelas LIKE '%${search}%' OR status LIKE '%${search}%' OR keterangan LIKE '%${search}%') ORDER BY ${sortby} ${ascdsc} LIMIT ${limit} OFFSET ${offset}`, (error, results) => {
       if (error) {
         response.status(400).send({
           status: 0,
@@ -553,7 +543,7 @@ const getLog = (request, response) => {
         })
       }
       else {
-        pool.query(`SELECT * FROM log WHERE (waktu BETWEEN '${startDate}' AND '${endDate}') AND (nama LIKE '%${search}%' OR nim LIKE '%${search}%' OR koderuangan LIKE '%${search}%' OR kodematkul LIKE '%${search}%' OR kelas LIKE '%${search}%' OR status LIKE '%${search}%') OR keterangan LIKE '%${search}%'`, (error, result) => {
+        pool.query(`SELECT * FROM log WHERE (waktu BETWEEN '${startDate}' AND '${endDate}') AND (nama LIKE '%${search}%' OR nim LIKE '%${search}%' OR koderuangan LIKE '%${search}%' OR kodematkul LIKE '%${search}%' OR kelas LIKE '%${search}%' OR status LIKE '%${search}%' OR keterangan LIKE '%${search}%')`, (error, result) => {
           response.status(200).json({
             status: 1,
             count: result.rowCount,
@@ -587,6 +577,48 @@ const getLogByNimDate = (request, response) => {
   })
 }
 
+const getStatistikByNimDate = (request, response) => {
+  var nim = removeSpace(request.params.nim)
+  var { startDate, endDate } = request.body
+  pool.query(`SELECT a.namamatkul, b.kodematkul, b.kelas, count(c.hari) as count FROM matkul a inner join filterpengguna b on a.kodematkul=b.kodematkul and a.kelas=b.kelas inner join filterruangan c on b.kodematkul = c.kodematkul and b.kelas = c.kelas and b.nim='${nim}' group by a.namamatkul, b.kodematkul, b.kelas  order by b.kodematkul asc, b.kelas`, (error, result_matkul) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: 'Failed to GET Matkul',
+      })
+    }
+    else {
+      pool.query(`SELECT a.kodematkul, a.kelas, a.status, a.keterangan, a.waktu FROM log a inner join filterpengguna b on a.kodematkul = b.kodematkul and a.kelas = b.kelas and b.nim = '${nim}' and (a.status = 'Dosen' or a.status = 'Asisten') where (a.waktu::date BETWEEN '${startDate}' AND '${endDate}') order by a.kodematkul asc, a.kelas asc, a.waktu asc`, (error, result_log_pengajar) => {
+        if (error) {
+          response.status(400).send({
+            status: 0,
+            pesan: 'Failed to GET Log Dosen',
+          })
+        }
+        else {
+          pool.query(`select kodematkul, kelas, waktu, keterangan from log where nim='${nim}' and status = 'Mahasiswa' and (waktu::date BETWEEN '${startDate}' AND '${endDate}') order by kodematkul asc, kelas asc, waktu asc`, (error, result_log_mahasiswa) => {
+            if (error) {
+              response.status(400).send({
+                status: 0,
+                pesan: 'Failed to GET Log Mahasiswa',
+              })
+            }
+            else {
+              response.status(200).json({
+                status: 1,
+                matkul: result_matkul.rows,
+                log_pengajar: result_log_pengajar.rows,
+                log_mahasiswa: result_log_mahasiswa.rows
+              })
+            }
+          })
+        }
+      })
+    }
+  })
+}
+
+//SELECT a.waktu::date as date, (case when EXTRACT(MINUTE from a.waktu) >= 40 then EXTRACT(hour from a.waktu + interval '1 hour') when EXTRACT(MINUTE from a.waktu) < 40 then EXTRACT(hour from a.waktu) end ) as hour, a.kodematkul, a.kelas, a.status FROM log a inner join filterpengguna b on a.kodematkul = b.kodematkul and a.kelas = b.kelas and b.nim = '${nim}' and (a.status = 'Dosen' or a.status = 'Asisten') order by a.kodematkul asc, a.kelas asc, a.waktu asc
 // const createLog = (request, response) => {
 //   var {waktu, nama, nim, koderuangan, kodematkul, status} = request.body
 //   pool.query(`select * from pengguna a inner join filterpengguna b on a.nim = '${nim}' and  a.nim = b.nim  inner join filterruangan c on b.kodematkul='${kodematkul}' and c.koderuangan='${koderuangan}' and b.kodematkul = c.kodematkul`, (error, results) => {
@@ -746,6 +778,7 @@ const getMatkulRuangan = (request, response) => {
     else if (results.rowCount === 0) {
       response.status(200).json({
         status: 2,
+        pesan: 'Ruangan Not Found',
       })
     }
     else {
@@ -1435,11 +1468,13 @@ const getFingerprintDevice = (request, response) => {
       if (results.rowCount == 0) {
         response.status(400).json({
           status: 0,
+          pesan: 'Kode Device Not Found',
         })
       }
       else {
         response.status(200).json({
           status: 1,
+          pesan: 'Device Found',
         })
       }
     }
@@ -1597,6 +1632,7 @@ module.exports = {
   //log
   getLog,
   getLogByNimDate,
+  getStatistikByNimDate,
   createLog,
   deleteLog,
   //matkul
