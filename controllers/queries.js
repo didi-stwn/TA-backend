@@ -597,6 +597,46 @@ const getLogByNimDate = (request, response) => {
   })
 }
 
+const getStatistikAll = (request, response) => {
+  var nim = removeSpace(request.params.nim)
+  pool.query(`SELECT a.namamatkul, b.kodematkul, b.kelas, count(c.hari) as count FROM matkul a inner join filterpengguna b on a.kodematkul=b.kodematkul and a.kelas=b.kelas inner join filterruangan c on b.kodematkul = c.kodematkul and b.kelas = c.kelas and b.nim='${nim}' group by a.namamatkul, b.kodematkul, b.kelas  order by b.kodematkul asc, b.kelas asc`, (error, result_matkul) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: 'Failed to GET Matkul',
+      })
+    }
+    else {
+      pool.query(`SELECT a.koderuangan, a.kodematkul, a.kelas, a.status, a.keterangan, a.waktu FROM log a inner join filterpengguna b on a.kodematkul = b.kodematkul and a.kelas = b.kelas and b.nim = '${nim}' and (a.status = 'Dosen' or a.status = 'Asisten') order by a.kodematkul asc, a.kelas asc, a.waktu asc`, (error, result_log_pengajar) => {
+        if (error) {
+          response.status(400).send({
+            status: 0,
+            pesan: 'Failed to GET Log Dosen',
+          })
+        }
+        else {  
+          pool.query(`select waktu, nama, koderuangan, kodematkul, kelas, keterangan from log where nim='${nim}' and status = 'Mahasiswa' order by kodematkul asc, kelas asc, waktu asc`, (error, result_log_mahasiswa) => {
+            if (error) {
+              response.status(400).send({ 
+                status: 0,
+                pesan: 'Failed to GET Log Mahasiswa',
+              })
+            }
+            else {
+              response.status(200).json({
+                status: 1,
+                matkul: result_matkul.rows,
+                log_pengajar: result_log_pengajar.rows,
+                log_mahasiswa: result_log_mahasiswa.rows
+              })
+            }
+          })
+        }
+      })
+    }
+  })
+}
+
 const getStatistikByNimDate = (request, response) => {
   var nim = removeSpace(request.params.nim)
   var { startDate, endDate } = request.body
@@ -609,17 +649,17 @@ const getStatistikByNimDate = (request, response) => {
       })
     }
     else {
-      pool.query(`SELECT a.kodematkul, a.kelas, a.status, a.keterangan, a.waktu FROM log a inner join filterpengguna b on a.kodematkul = b.kodematkul and a.kelas = b.kelas and b.nim = '${nim}' and (a.status = 'Dosen' or a.status = 'Asisten') where (a.waktu::date BETWEEN '${startDate}' AND '${endDate}') order by a.kodematkul asc, a.kelas asc, a.waktu asc`, (error, result_log_pengajar) => {
+      pool.query(`SELECT a.koderuangan, a.kodematkul, a.kelas, a.status, a.keterangan, a.waktu FROM log a inner join filterpengguna b on a.kodematkul = b.kodematkul and a.kelas = b.kelas and b.nim = '${nim}' and (a.status = 'Dosen' or a.status = 'Asisten') where (a.waktu::date BETWEEN '${startDate}' AND '${endDate}') order by a.kodematkul asc, a.kelas asc, a.waktu asc`, (error, result_log_pengajar) => {
         if (error) {
           response.status(400).send({
             status: 0,
             pesan: 'Failed to GET Log Dosen',
           })
         }
-        else {
-          pool.query(`select kodematkul, kelas, waktu, keterangan from log where nim='${nim}' and status = 'Mahasiswa' and (waktu::date BETWEEN '${startDate}' AND '${endDate}') order by kodematkul asc, kelas asc, waktu asc`, (error, result_log_mahasiswa) => {
+        else {  
+          pool.query(`select waktu, nama, koderuangan, kodematkul, kelas, keterangan from log where nim='${nim}' and status = 'Mahasiswa' and (waktu::date BETWEEN '${startDate}' AND '${endDate}') order by kodematkul asc, kelas asc, waktu asc`, (error, result_log_mahasiswa) => {
             if (error) {
-              response.status(400).send({
+              response.status(400).send({ 
                 status: 0,
                 pesan: 'Failed to GET Log Mahasiswa',
               })
@@ -1030,6 +1070,23 @@ const getDevicePengguna = (request, response) => {
 const getDeviceAsisten = (request, response) => {
   var { kodematkul, kelas, offset } = request.params
   pool.query(`SELECT a.nip, a.nama, b.finger1, b.finger2 FROM filterdosen a INNER JOIN pengguna b ON a.kodematkul = '${kodematkul}' AND a.kelas = '${kelas}' AND a.nip = b.nim ORDER BY a.nip asc LIMIT 5 OFFSET '${offset}'`, (error, results) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: 'Failed to GET',
+      })
+    }
+    else {
+      response.status(200).json({
+        status: 1,
+        hasil: results.rows
+      })
+    }
+  })
+}
+
+const getAllPengguna = (request, response) => {
+  pool.query(`SELECT fakultas,jurusan,nim,nama FROM pengguna ORDER BY nim asc`, (error, results) => {
     if (error) {
       response.status(400).send({
         status: 0,
@@ -1706,6 +1763,7 @@ module.exports = {
   //log
   getLog,
   getLogByNimDate,
+  getStatistikAll,
   getStatistikByNimDate,
   getLogPengajarByNimDate,
   createLog,
@@ -1722,6 +1780,7 @@ module.exports = {
   getDeviceMatkulPengguna,
   getDevicePengguna,
   getDeviceAsisten,
+  getAllPengguna,
   getPengguna,
   getPenggunaByFakultas,
   createPengguna,

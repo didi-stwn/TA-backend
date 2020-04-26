@@ -8,6 +8,7 @@ router.get('/countermatkul/:kodematkul/:kelas', db.getDeviceCounterMatkulPenggun
 router.get('/readmatkul/:koderuangan', db.getDeviceMatkulPengguna);
 router.get('/readpengguna/:kodematkul/:kelas/:offset', db.getDevicePengguna);
 router.get('/readasisten/:kodematkul/:kelas/:offset', db.getDeviceAsisten);
+router.post('/read_all/', auth.checkToken, db.getAllPengguna);
 router.post('/read/', auth.checkToken, db.getPengguna);
 router.post('/read/:fakultas', auth.checkToken, db.getPenggunaByFakultas);
 router.post('/create/',auth.checkToken, db.createPengguna);
