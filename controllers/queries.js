@@ -1,6 +1,7 @@
 const path = require('path');
 const config = require(path.join(__dirname, '..', 'config'));
 const Pool = require('pg').Pool
+const jwt = require('jsonwebtoken');
 var net = require('net');
 
 const pool = new Pool({
@@ -614,10 +615,10 @@ const getStatistikAll = (request, response) => {
             pesan: 'Failed to GET Log Dosen',
           })
         }
-        else {  
+        else {
           pool.query(`select waktu, nama, koderuangan, kodematkul, kelas, keterangan from log where nim='${nim}' and status = 'Mahasiswa' order by kodematkul asc, kelas asc, waktu asc`, (error, result_log_mahasiswa) => {
             if (error) {
-              response.status(400).send({ 
+              response.status(400).send({
                 status: 0,
                 pesan: 'Failed to GET Log Mahasiswa',
               })
@@ -656,10 +657,10 @@ const getStatistikByNimDate = (request, response) => {
             pesan: 'Failed to GET Log Dosen',
           })
         }
-        else {  
+        else {
           pool.query(`select waktu, nama, koderuangan, kodematkul, kelas, keterangan from log where nim='${nim}' and status = 'Mahasiswa' and (waktu::date BETWEEN '${startDate}' AND '${endDate}') order by kodematkul asc, kelas asc, waktu asc`, (error, result_log_mahasiswa) => {
             if (error) {
-              response.status(400).send({ 
+              response.status(400).send({
                 status: 0,
                 pesan: 'Failed to GET Log Mahasiswa',
               })
@@ -703,17 +704,33 @@ const getLogPengajarByNimDate = (request, response) => {
             if (error) {
               response.status(400).send({
                 status: 0,
-                pesan: 'Failed to GET Log Mahasiswa',
+                pesan: 'Failed to GET Name',
               })
             }
             else if (result_name_dosen.rowCount == 0) {
               pool.query(`select nama from pengguna where nim='${nim}' `, (error, result_name_asisten) => {
-                response.status(200).json({
-                  status: 1,
-                  log_all_pengajar: result_log_pengajar.rows,
-                  log_pengajar: result_log.rows,
-                  nama_pengajar: result_name_asisten.rows[0].nama
-                })
+                if (error) {
+                  response.status(400).send({
+                    status: 0,
+                    pesan: 'Failed to GET Name'
+                  })
+                }
+                else {
+                  if (result_name_asisten.rowCount > 0) {
+                    response.status(200).json({
+                      status: 1,
+                      log_all_pengajar: result_log_pengajar.rows,
+                      log_pengajar: result_log.rows,
+                      nama_pengajar: result_name_asisten.rows[0].nama
+                    })
+                  }
+                  else {
+                    response.status(400).send({
+                      status: 0,
+                      pesan: 'Failed to GET Name'
+                    })
+                  }
+                }
               })
             }
             else {
@@ -1405,15 +1422,21 @@ const updateDevice = (request, response) => {
 const updateLastseenRuangan = (request, response) => {
   var { kodedevice } = request.body
   var lastseen = new Date().toLocaleString() + "+0"
-  pool.query(`UPDATE ruangan set lastseen='${lastseen}' WHERE kodedevice='${kodedevice}'`, (error, results) => {
+  pool.query(`SELECT * FROM ruangan WHERE kodedevice='${kodedevice}'`, (error, results_counter_device) => {
     if (error) {
       response.status(400).send({
         status: 0,
         pesan: "Input data is incorrect"
       })
     }
+    else if (results_counter_device.rowCount == 0) {
+      response.status(400).send({
+        status: 0,
+        pesan: "Kode Device Not Found"
+      })
+    }
     else {
-      pool.query(`SELECT status FROM ruangan WHERE kodedevice='${kodedevice}'`, (error, resultss) => {
+      pool.query(`UPDATE ruangan set lastseen='${lastseen}' WHERE kodedevice='${kodedevice}'`, (error, results) => {
         if (error) {
           response.status(400).send({
             status: 0,
@@ -1421,8 +1444,29 @@ const updateLastseenRuangan = (request, response) => {
           })
         }
         else {
-          response.status(200).json({
-            status: resultss.rows[0].status,
+          pool.query(`SELECT * FROM ruangan WHERE kodedevice='${kodedevice}'`, (error, resultss) => {
+            if (error) {
+              response.status(400).send({
+                status: 0,
+                pesan: "Input data is incorrect"
+              })
+            }
+            else {
+              var token = jwt.sign({ kodedevice: kodedevice },
+                config.secret,
+                { expiresIn: '420000' });
+              if (resultss.rowCount > 0) {
+                response.status(200).json({
+                  status: resultss.rows[0].status,
+                  token: token
+                })
+              }
+              else {
+                response.status(400).send({
+                  status: 0
+                })
+              }
+            }
           })
         }
       })

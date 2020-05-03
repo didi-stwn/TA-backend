@@ -9,7 +9,7 @@ router.post('/read/:nim', auth.checkToken, db.getLogByNimDate);
 router.post('/statistik_all/:nim', auth.checkToken, db.getStatistikAll);
 router.post('/statistik/:nim', auth.checkToken, db.getStatistikByNimDate);
 router.post('/pengajar/:nim', auth.checkToken, db.getLogPengajarByNimDate);
-router.post('/create/', db.createLog);
+router.post('/create/', auth.checkToken, db.createLog);
 router.post('/delete/', auth.checkToken, db.deleteLog);
 
 module.exports = router;
