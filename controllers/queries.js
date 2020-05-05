@@ -1454,7 +1454,7 @@ const updateLastseenRuangan = (request, response) => {
             else {
               var token = jwt.sign({ kodedevice: kodedevice },
                 config.secret,
-                { expiresIn: '420000' });
+                { expiresIn: '3600000' }); //1 hour
               if (resultss.rowCount > 0) {
                 response.status(200).json({
                   status: resultss.rows[0].status,
