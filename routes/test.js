@@ -6,6 +6,7 @@ const auth = require(path.join(__dirname,'..','controllers','auth'))
 
 router.get('/read/', db.testread);
 router.post('/create/', db.testcreate);
+router.post('/testing/', db.testingAPI);
 router.put('/update/', db.testupdate);
 router.delete('/delete/', db.testdelete);
 

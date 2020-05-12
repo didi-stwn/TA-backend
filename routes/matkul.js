@@ -10,5 +10,8 @@ router.post('/read/ruangan', auth.checkToken, db.getMatkulRuangan);
 router.post('/create/',auth.checkToken, db.createMatkul);
 router.post('/update/', auth.checkToken, db.updateMatkul);
 router.post('/delete/', auth.checkToken, db.deleteMatkul);
+router.post('/tambahan/read/', auth.checkToken, db.getMatkulTambahan);
+router.post('/tambahan/create/', auth.checkToken, db.createMatkulTambahan);
+router.post('/tambahan/delete/', auth.checkToken, db.deleteMatkulTambahan);
 
 module.exports = router;

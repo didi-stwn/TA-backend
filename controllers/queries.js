@@ -598,6 +598,54 @@ const getLogByNimDate = (request, response) => {
   })
 }
 
+const getStatistikMatkul = (request, response) => {
+  var kodematkul = removeSpace(request.params.kodematkul)
+  pool.query(`SELECT a.kodematkul, a.namamatkul, a.kelas, count(b.nim) as count FROM matkul a inner join filterpengguna b on a.kodematkul = b.kodematkul and a.kelas = b.kelas and a.kodematkul ='${kodematkul}' group by a.namamatkul, a.kodematkul, a.kelas  order by a.kelas asc`, (error, results) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: 'Failed to GET',
+      })
+    }
+    else {
+      response.status(200).json({
+        status: 1,
+        hasil: results.rows
+      })
+    }
+  })
+}
+
+const getLogMatkul = (request, response) => {
+  var { kodematkul, kelas } = request.params
+  var { startDate, endDate } = request.body
+  pool.query(`SELECT a.nim, a.nama, a.kodematkul, a.kelas, a.status, a.keterangan, a.waktu FROM log a inner join matkul b on a.kodematkul = b.kodematkul and a.kelas = b.kelas and b.kodematkul = '${kodematkul}' and b.kelas = '${kelas}' and (a.status = 'Dosen' or a.status = 'Asisten') where (a.waktu::date BETWEEN '${startDate}' AND '${endDate}') order by a.kelas asc, a.waktu asc`, (error, result_log_pengajar) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: 'Failed to GET Log Dosen',
+      })
+    }
+    else {
+      pool.query(`select waktu, nim, kelas, keterangan from log where kodematkul='${kodematkul}' and kelas='${kelas}'and status = 'Mahasiswa' and (waktu::date BETWEEN '${startDate}' AND '${endDate}') order by kelas asc, waktu asc`, (error, result_log_mahasiswa) => {
+        if (error) {
+          response.status(400).send({
+            status: 0,
+            pesan: 'Failed to GET Log Mahasiswa',
+          })
+        }
+        else {
+          response.status(200).json({
+            status: 1,
+            log_pengajar: result_log_pengajar.rows,
+            log_mahasiswa: result_log_mahasiswa.rows
+          })
+        }
+      })
+    }
+  })
+}
+
 const getStatistikAll = (request, response) => {
   var nim = removeSpace(request.params.nim)
   pool.query(`SELECT a.namamatkul, b.kodematkul, b.kelas, count(c.hari) as count FROM matkul a inner join filterpengguna b on a.kodematkul=b.kodematkul and a.kelas=b.kelas inner join filterruangan c on b.kodematkul = c.kodematkul and b.kelas = c.kelas and b.nim='${nim}' group by a.namamatkul, b.kodematkul, b.kelas  order by b.kodematkul asc, b.kelas asc`, (error, result_matkul) => {
@@ -748,40 +796,127 @@ const getLogPengajarByNimDate = (request, response) => {
   })
 }
 
-//SELECT a.waktu::date as date, (case when EXTRACT(MINUTE from a.waktu) >= 40 then EXTRACT(hour from a.waktu + interval '1 hour') when EXTRACT(MINUTE from a.waktu) < 40 then EXTRACT(hour from a.waktu) end ) as hour, a.kodematkul, a.kelas, a.status FROM log a inner join filterpengguna b on a.kodematkul = b.kodematkul and a.kelas = b.kelas and b.nim = '${nim}' and (a.status = 'Dosen' or a.status = 'Asisten') order by a.kodematkul asc, a.kelas asc, a.waktu asc
-// const createLog = (request, response) => {
-//   var {waktu, nama, nim, koderuangan, kodematkul, status} = request.body
-//   pool.query(`select * from pengguna a inner join filterpengguna b on a.nim = '${nim}' and  a.nim = b.nim  inner join filterruangan c on b.kodematkul='${kodematkul}' and c.koderuangan='${koderuangan}' and b.kodematkul = c.kodematkul`, (error, results) => {
-//     if (error) {
-//       response.status(400).send({
-//         status: 0,
-//         pesan: "Input data is incorrect"
-//       })
-//     }
-//     else if (results.rowCount!==0){
-//       pool.query('INSERT INTO log (waktu, nama, nim, koderuangan, kodematkul, status) VALUES ($1, $2, $3, $4, $5, $6)', [waktu, nama, nim, koderuangan, kodematkul, status], (error, results) => {
-//         if (error) {
-//           response.status(400).send({
-//             status: 0,
-//             pesan: "Input data is incorrect"
-//           })
-//         }
-//         else{
-//           response.status(200).json({
-//             status: 1,
-//             pesan: "Data added"
-//           })
-//         }
-//       })
-//     }
-//     else {
-//       response.status(400).send({
-//         status: 0,
-//         pesan: "Input data is incorrect"
-//       })
-//     }
-//   })
-// }
+const getSolveMahasiswa = (request, response) => {
+  pool.query('select * from solve_statistik_mahasiswa order by nim asc', (error, results) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: "Failed get data"
+      })
+    }
+    else {
+      response.status(200).json({
+        status: 1,
+        hasil: results.rows
+      })
+    }
+  })
+}
+
+const createSolveMahasiswa = (request, response) => {
+  var { nim, kodematkul, kelas } = request.body
+  pool.query('INSERT INTO solve_statistik_mahasiswa (nim, kodematkul, kelas) VALUES ($1, $2, $3)', [nim, kodematkul, kelas], (error, results) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: "Input data is incorrect"
+      })
+    }
+    else {
+      response.status(200).json({
+        status: 1,
+        pesan: "Data added"
+      })
+    }
+  })
+}
+
+const deleteSolveMahasiswa = (request, response) => {
+  var { nim, kodematkul, kelas } = request.body
+  pool.query(`delete from solve_statistik_mahasiswa where nim = '${nim}' and kodematkul = '${kodematkul}' and kelas = '${kelas}'`, (error, results) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: "Failed to delete"
+      })
+    }
+    else {
+      response.status(200).json({
+        status: 1,
+        pesan: "Data deleted"
+      })
+    }
+  })
+}
+
+const getKonfigurasiMahasiswa = (request, response) => {
+  pool.query(`select * from setting_statistik_mahasiswa order by nama`, (error, results) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: "get data failed"
+      })
+    }
+    else {
+      response.status(200).json({
+        status: 1,
+        hasil: results.rows
+      })
+    }
+  })
+}
+
+const createKonfigurasiMahasiswa = (request, response) => {
+  var { nama, jumlah_minggu } = request.body
+  pool.query(`insert into setting_statistik_mahasiswa (nama, jumlah_minggu) values ('${nama}', ${jumlah_minggu})`, (error, results) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: "Input data is incorrect"
+      })
+    }
+    else {
+      response.status(200).json({
+        status: 1,
+        pesan: "Data added"
+      })
+    }
+  })
+}
+const updateKonfigurasiMahasiswa = (request, response) => {
+  var { nama_old, nama_new, jumlah_minggu_new } = request.body
+  pool.query(`update setting_statistik_mahasiswa set nama = '${nama_new}', jumlah_minggu = ${jumlah_minggu_new} where nama = '${nama_old}'`, (error, results) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: "Input data is incorrect"
+      })
+    }
+    else {
+      response.status(200).json({
+        status: 1,
+        pesan: "Data updated"
+      })
+    }
+  })
+}
+const deleteKonfigurasiMahasiswa = (request, response) => {
+  var { nama } = request.body
+  pool.query(`delete from setting_statistik_mahasiswa where nama = '${nama}'`, (error, results) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: "Input data is incorrect"
+      })
+    }
+    else {
+      response.status(200).json({
+        status: 1,
+        pesan: "Data deleted"
+      })
+    }
+  })
+}
 
 const createLog = (request, response) => {
   var { waktu, nama, nim, koderuangan, kodematkul, kelas, status, keterangan } = request.body
@@ -986,6 +1121,58 @@ const deleteMatkul = (request, response) => {
   })
 }
 
+const getMatkulTambahan = (request, response) => {
+  pool.query(`SELECT * FROM matkultambahan sort by hari asc, jam asc`, (error, results) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: 'Failed to GET',
+      })
+    }
+    else {
+      response.status(200).json({
+        status: 1,
+        hasil: results.rows
+      })
+    }
+  })
+}
+
+const createMatkulTambahan = (request, response) => {
+  var { kodematkul, kelas, hari, jam, durasi, koderuangan} = request.body
+  pool.query('INSERT INTO matkultambahan (kodematkul, kelas, hari, jam, durasi, koderuangan) VALUES ($1, $2, $3, $4, $5, $6)', [kodematkul, kelas, hari, jam, durasi, koderuangan], (error, results) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: "Input data is incorrect"
+      })
+    }
+    else {
+      response.status(200).json({
+        status: 1,
+        pesan: "Data added"
+      })
+    }
+  })
+}
+
+const deleteMatkulTambahan = (request, response) => {
+  var { kodematkul, kelas, hari, jam, durasi, koderuangan } = request.body
+  pool.query(`DELETE FROM matkultambahan WHERE kodematkul = '${kodematkul}' AND kelas = '${kelas}' AND hari = ${hari} AND jam = ${jam} AND durasi = ${durasi} AND koderuangan = '${koderuangan}'`, (error, results) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: "Input data is incorrect"
+      })
+    }
+    else {
+      response.status(200).json({
+        status: 1,
+        pesan: "Data deleted"
+      })
+    }
+  })
+}
 // const getDevicePengguna = (request, response) => {
 //   var {koderuangan} = request.params
 //   // SELECT a.hari, a.jam, a.kodematkul, a.kelas, b.nim, b.nama, c.finger1, c.finger2 FROM filterruangan a INNER JOIN filterpengguna b ON a.koderuangan = '9125' AND a.kodematkul = b.kodematkul AND a.kelas = b.kelas INNER JOIN pengguna c ON b.nim = c.nim ORDER BY a.hari asc, a.jam asc;
@@ -1779,6 +1966,65 @@ const testdelete = (request, response) => {
   })
 }
 
+const testingAPI = (request, response) => {
+  var { kodematkul, startDate, endDate } = request.body
+  pool.query(`select namamatkul, kodematkul, kelas from matkul where kodematkul = '${kodematkul}'`, (error, result_matkul) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: "get data failed"
+      })
+    }
+    else {
+      if (result_matkul.rowCount === 0) {
+        response.status(200).json({
+          status: 0,
+          pesan: "Matkul not found"
+        })
+      }
+      else {
+        pool.query(`select a.kelas, b.nim, b.nama from matkul a inner join filterpengguna b on a.kodematkul = b.kodematkul and a.kelas = b.kelas and a.kodematkul = '${kodematkul}' order by a.kelas asc, b.nim asc`, (error, result_pengguna_matkul) => {
+          if (error) {
+            response.status(400).send({
+              status: 0,
+              pesan: "get data pengguna matkul failed"
+            })
+          }
+          else {
+            pool.query(`select waktu, kodematkul, kelas, status from log where kodematkul = '${kodematkul}' and status != 'Mahasiswa' order by kodematkul asc, kelas asc, waktu asc`, (error, result_pengajar) => {
+              if (error) {
+                response.status(400).send({
+                  status: 0,
+                  pesan: "get data pengajar failed"
+                })
+              }
+              else {
+                pool.query(`select waktu, kodematkul, kelas, status from log where kodematkul = '${kodematkul}' and status = 'Mahasiswa' order by kodematkul asc, kelas asc, waktu asc`, (error, result_mahasiswa) => {
+                  if (error) {
+                    response.status(400).send({
+                      status: 0,
+                      pesan: "get data mahasiswa failed"
+                    })
+                  }
+                  else {
+                    response.status(200).json({
+                      status: 1,
+                      result_matkul: result_matkul.rows,
+                      result_pengguna_matkul: result_pengguna_matkul.rows,
+                      result_log_pengajar: result_pengajar.rows,
+                      result_log_mahasiswa: result_mahasiswa.rows,
+                    })
+                  }
+                })
+              }
+            })
+          }
+        })
+      }
+    }
+  })
+}
+
 module.exports = {
   //device
   // getDevice,
@@ -1807,9 +2053,18 @@ module.exports = {
   //log
   getLog,
   getLogByNimDate,
+  getStatistikMatkul,
+  getLogMatkul,
   getStatistikAll,
   getStatistikByNimDate,
   getLogPengajarByNimDate,
+  getSolveMahasiswa,
+  createSolveMahasiswa,
+  deleteSolveMahasiswa,
+  getKonfigurasiMahasiswa,
+  createKonfigurasiMahasiswa,
+  updateKonfigurasiMahasiswa,
+  deleteKonfigurasiMahasiswa,
   createLog,
   deleteLog,
   //matkul
@@ -1819,6 +2074,9 @@ module.exports = {
   createMatkul,
   updateMatkul,
   deleteMatkul,
+  getMatkulTambahan,
+  createMatkulTambahan,
+  deleteMatkulTambahan,
   //pengguna
   getDeviceCounterMatkulPengguna,
   getDeviceMatkulPengguna,
@@ -1862,9 +2120,102 @@ module.exports = {
   testread,
   testcreate,
   testupdate,
-  testdelete
+  testdelete,
+  testingAPI
 }
 
 //
 //select a.hari, a.jam, b.kodematkul, c.nim, c.nama, c.finger1, c.finger2 from filterruangan a inner join filterpengguna b on a.koderuangan = '9125' and  a.kodematkul = b.kodematkul inner join pengguna c on b.nim = c.nim order by a.hari asc, a.jam asc;
 
+//Matkul
+
+
+//Ruangan
+//dapetin matkul apa aja yg pernah kelas disitu
+//select b.kodematkul, b.kelas from ruangan a inner join log b on a.koderuangan = b.koderuangan and a.koderuangan = '9125' and b.keterangan = 'Hadir' group by a.koderuangan, b.kodematkul, b.kelas order by kodematkul asc, kelas asc;
+//for 1 sampai hasil.length
+//select count(*) from filterpengguna where kodematkul = 'EL0001' and kelas = 'K01';
+//jsonstringify
+// const testingAPI = (request, response) => {
+//   var { koderuangan, startDate, endDate } = request.body
+//   pool.query(`select koderuangan from ruangan where koderuangan = '${koderuangan}'`, (error, result_check_ruangan) => {
+//     if (error) {
+//       response.status(400).send({
+//         status: 0,
+//         pesan: "get data failed"
+//       })
+//     }
+//     else {
+//       if (result_check_ruangan.rowCount === 0) {
+//         response.status(200).json({
+//           status: 0,
+//           pesan: "Ruangan not found"
+//         })
+//       }
+//       else {
+//         pool.query(`select waktu, kodematkul, kelas, status from log where koderuangan = '${koderuangan}' and status != 'Mahasiswa' and keterangan = 'Hadir' and (waktu::date BETWEEN '${startDate}' AND '${endDate}') order by kodematkul asc, kelas asc, waktu asc`, (error, result_pengajar) => {
+//           if (error) {
+//             response.status(400).send({
+//               status: 0,
+//               pesan: "get data pengajar failed"
+//             })
+//           }
+//           else {
+//             pool.query(`select waktu, kodematkul, kelas, status from log where koderuangan = '${koderuangan}' and status = 'Mahasiswa' and keterangan = 'Hadir' and (waktu::date BETWEEN '${startDate}' AND '${endDate}') order by kodematkul asc, kelas asc, waktu asc`, (error, result_mahasiswa) => {
+//               if (error) {
+//                 response.status(400).send({
+//                   status: 0,
+//                   pesan: "get data mahasiswa failed"
+//                 })
+//               }
+//               else {
+//                 response.status(200).json({
+//                   status: 1,
+//                   result_log_pengajar: result_pengajar.rows,
+//                   result_log_mahasiswa: result_mahasiswa.rows,
+//                 })
+//               }
+//             })
+//           }
+//         })
+//       }
+//     }
+//   })
+// }
+
+
+
+//SELECT a.waktu::date as date, (case when EXTRACT(MINUTE from a.waktu) >= 40 then EXTRACT(hour from a.waktu + interval '1 hour') when EXTRACT(MINUTE from a.waktu) < 40 then EXTRACT(hour from a.waktu) end ) as hour, a.kodematkul, a.kelas, a.status FROM log a inner join filterpengguna b on a.kodematkul = b.kodematkul and a.kelas = b.kelas and b.nim = '${nim}' and (a.status = 'Dosen' or a.status = 'Asisten') order by a.kodematkul asc, a.kelas asc, a.waktu asc
+// const createLog = (request, response) => {
+//   var {waktu, nama, nim, koderuangan, kodematkul, status} = request.body
+//   pool.query(`select * from pengguna a inner join filterpengguna b on a.nim = '${nim}' and  a.nim = b.nim  inner join filterruangan c on b.kodematkul='${kodematkul}' and c.koderuangan='${koderuangan}' and b.kodematkul = c.kodematkul`, (error, results) => {
+//     if (error) {
+//       response.status(400).send({
+//         status: 0,
+//         pesan: "Input data is incorrect"
+//       })
+//     }
+//     else if (results.rowCount!==0){
+//       pool.query('INSERT INTO log (waktu, nama, nim, koderuangan, kodematkul, status) VALUES ($1, $2, $3, $4, $5, $6)', [waktu, nama, nim, koderuangan, kodematkul, status], (error, results) => {
+//         if (error) {
+//           response.status(400).send({
+//             status: 0,
+//             pesan: "Input data is incorrect"
+//           })
+//         }
+//         else{
+//           response.status(200).json({
+//             status: 1,
+//             pesan: "Data added"
+//           })
+//         }
+//       })
+//     }
+//     else {
+//       response.status(400).send({
+//         status: 0,
+//         pesan: "Input data is incorrect"
+//       })
+//     }
+//   })
+// }
