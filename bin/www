@@ -6,7 +6,17 @@
 
 const app = require('../app');
 const debug = require('debug')('serverdb:server');
+const fs = require('fs');
 const http = require('http');
+const https = require('https');
+const privateKey  = fs.readFileSync('./SSL.key', 'utf8');
+const certificate = fs.readFileSync('./SSL.crt', 'utf8');
+
+// const path = require('path');
+// const certificate = require(path.join(__dirname,'..','bin','SSL.crt'))
+// const privateKey = require(path.join(__dirname,'..','bin','SSL.key'))
+const credentials = {key: privateKey, cert: certificate};
+
 
 /**
  * Get port from environment and store in Express.
@@ -20,6 +30,7 @@ app.set('port', port);
  * Create HTTP server.
  */
 
+// var server = https.createServer(credentials, app);
 var server = http.createServer(app);
 
 /**

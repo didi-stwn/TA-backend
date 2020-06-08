@@ -20,6 +20,7 @@ router.post('/konfigurasi_mahasiswa/edit', auth.checkToken, db.updateKonfigurasi
 router.post('/konfigurasi_mahasiswa/delete', auth.checkToken, db.deleteKonfigurasiMahasiswa);
 router.post('/create/', auth.checkToken, db.createLog);
 router.post('/delete/', auth.checkToken, db.deleteLog);
-router.post('/statistik_ruangan',auth.checkToken,db.getStatistikRuangan);
+router.post('/statistik_ruangan',auth.checkToken, db.getStatistikRuangan);
+router.delete('/delete_duplicate_log', auth.checkToken, db.deleteDuplicateLog);
 
 module.exports = router;

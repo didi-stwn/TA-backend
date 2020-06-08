@@ -601,6 +601,23 @@ const getLog = (request, response) => {
   }
 }
 
+const deleteDuplicateLog = (request, response) => {
+  pool.query(`delete from log a using log b where a.ctid < b.ctid and a.* = b.*;`, (error, results) => {
+    if (error) {
+      response.status(400).send({
+        status: 0,
+        pesan: 'Failed to Delete',
+      })
+    }
+    else {
+      response.status(200).json({
+        status: 1,
+        pesan: 'Duplicate LOG Deleted'
+      })
+    }
+  })
+}
+
 const getLogByNimDate = (request, response) => {
   var nim = removeSpace(request.params.nim)
   var { startDate, endDate } = request.body
@@ -1044,7 +1061,7 @@ const getStatistikRuangan = (request, response) => {
                 pesan: 'Failed to GET Data Jadwal',
               })
             }
-            else { 
+            else {
               pool.query(`select a.waktu, a.hari, a.jam, a.durasi, a.kodematkul, a.kelas, count(b.nim) as jumlah from matkultambahan a inner join filterpengguna b on a.koderuangan = '${koderuangan}' AND (a.waktu::date BETWEEN '${startDate}' AND '${endDate}') AND a.kodematkul = b.kodematkul and a.kelas = b.kelas group by a.waktu, a.hari, a.jam, a.durasi, a.kodematkul, a.kelas order by waktu asc`, (error, result_matkultambahan) => {
                 if (error) {
                   response.status(400).send({
@@ -1248,7 +1265,7 @@ const deleteMatkul = (request, response) => {
 }
 
 const getMatkulTambahanByRuangan = (request, response) => {
-  var { koderuangan} = request.body
+  var { koderuangan } = request.body
   pool.query(`SELECT * FROM matkultambahan where koderuangan = '${koderuangan}' order by hari asc, jam asc`, (error, results) => {
     if (error) {
       response.status(400).send({
@@ -2197,6 +2214,7 @@ module.exports = {
   deleteFilterRuangan,
   //log
   getLog,
+  deleteDuplicateLog,
   getLogByNimDate,
   getStatistikMatkul,
   getLogMatkul,
